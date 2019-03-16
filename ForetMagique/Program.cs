@@ -4,12 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ForetMagique
+class Program
 {
-    class Program
+    ForetEnvironnement foret;
+    Agent agent;
+
+
+    public Program()
     {
-        static void Main(string[] args)
-        {
-        }
+        foret = new ForetEnvironnement();
+        agent = new Agent(foret);
+    }
+
+    static void Main(string[] args)
+    {
+
     }
 }
+

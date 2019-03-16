@@ -1,12 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ForetMagique
+public class Capteur // Classe qui récupère les données du manoir
 {
-    class Capteur
+    ForetEnvironnement foret;
+
+    public Capteur(ForetEnvironnement f)
     {
+        foret = f;
     }
+
+    public  Zone getZone() // récupère une copie de l'environnement actuel
+    {
+        return null;
+    }
+
+    public int getNBLignes()
+    {
+        return foret.NBPIECESLIGNE;
+    }
+
+    public int getPosX()
+    {
+        return 0;
+    }
+
+    public int getPosY()
+    {
+        return 0;
+    }
+ 
 }
