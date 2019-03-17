@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 public class ForetEnvironnement
 {
     public Thread thread;
-    public int NBPIECESLIGNE = 3;
+    public int NbZonesLigne = 9;
+    private readonly int NBMONSTRES = 2;
+    private readonly int NBCREVASSES = 2;
+
     private int posAgentX;
     private int posAgentY;
     private Zone[,] zonesForet;
@@ -17,17 +20,68 @@ public class ForetEnvironnement
     public ForetEnvironnement()
     {
         thread = new Thread(new ThreadStart(ThreadLoop));
-        zonesForet = new Zone[NBPIECESLIGNE, NBPIECESLIGNE];
+        zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
         posAgentX = 0;
-        posAgentY = 1;
-
-        for (int x = 0; x < NBPIECESLIGNE; x++)
+        posAgentY = 0;
+        Console.WriteLine("Debut Creation Foret");
+        for (int x = 0; x < NbZonesLigne; x++)
         {
-            for (int y = 0; y < NBPIECESLIGNE; y++)
+            for (int y = 0; y < NbZonesLigne; y++)
             {
-                zonesForet[y, x] = new Zone(x,y,x+","+y);
+                zonesForet[y, x] = new Zone(x,y);
             }
         }
+        Console.WriteLine("Creation ForetOK");
+        RemplirForet();
+    }
+
+    private void RemplirForet()
+    {
+        List<String> aPlacer = new List<String>();
+        aPlacer.Add("portail");
+        zonesForet[0, 0].contenu.Add("agent");
+        for (int i = 0; i < NBMONSTRES; i++) aPlacer.Add("monstre");
+        for (int i = 0; i < NBCREVASSES; i++) aPlacer.Add("crevasse");
+
+        Random rnd = new Random();
+        while (aPlacer.Count>0)
+        {
+            int x = rnd.Next(0, NbZonesLigne);
+            int y = rnd.Next(0, NbZonesLigne);
+            Console.WriteLine("Loop generation,count : " + aPlacer.Count + ", " + aPlacer.First() + " ,pos:" + x + ":" + y);
+            if (zonesForet[y, x].contenu.Count == 0)
+            {
+                zonesForet[y, x].contenu.Add(aPlacer.First());
+                aPlacer.RemoveAt(0);
+            }
+        }
+        Console.WriteLine("Monstres et crevasses placés");
+        for (int x = 0; x < NbZonesLigne; x++)
+        {
+            for (int y = 0; y < NbZonesLigne; y++)
+            {
+                if (MonstreEstProche(x, y)) zonesForet[y, x].contenu.Add("odeur");
+                if (CrevasseEstProche(x, y)) zonesForet[y, x].contenu.Add("vent");
+            }
+        }
+    }
+
+    private bool MonstreEstProche(int x ,int y)
+    {
+        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("monstre")) return true;
+        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("monstre")) return true;
+        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("monstre")) return true;
+        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("monstre")) return true;
+        else return false;
+    }
+
+    private bool CrevasseEstProche(int x, int y)
+    {
+        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("crevasse")) return true;
+        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("crevasse")) return true;
+        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("crevasse")) return true;
+        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("crevasse")) return true;
+        else return false;
     }
 
     public Zone GetCurrentZone()
@@ -38,7 +92,8 @@ public class ForetEnvironnement
     public void DeplacementAgent(string direction)
     {
         performance -= 1;
-        switch(direction)
+        zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
+        switch (direction)
         {
             case ("gauche"):
                 posAgentX -=1;
@@ -53,43 +108,40 @@ public class ForetEnvironnement
                 posAgentY += 1;
                 break;
         }
-        //zonesForet[posAgentY, posAgentX]
+        zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
     }
 
     public void LancerCaillou(Zone z)
     {
         performance -= 10;
+        if (z.contenu.Contains("monstre")) z.contenu.Remove("monstre");
     }
 
     public void PasserPortail()
     {
-        performance += 10 * NBPIECESLIGNE * NBPIECESLIGNE;
+        performance += 10 * NbZonesLigne * NbZonesLigne;
+        //TODO niveau suivant
     }
 
-    private void DessinerZone(Zone zone) // Dessin en ASCII du manoir
+    private void DessinerZone(Zone zone) // Dessin en ASCII de la foret
     {
-        
         if (posAgentX == zone.coordsX && posAgentY == zone.coordsY)
         {
             Console.Write("[A]");
         }
-        else Console.Write("[" + zone.contenu + "]");
-
-        /*
-        else if (zone.contenu == "monstre") Console.Write("[M]");
-        else if (zone.contenu == "vent") Console.Write("[V]");
-        else if (zone.contenu == "crevasse") Console.Write("[C]");
-        else if (zone.contenu == "odeur") Console.Write("[O]");
-        else if (zone.contenu == "portail") Console.Write("[P]");
-        else Console.Write("[ ]"); */
-        
+        else if (zone.contenu.Contains("portail")) Console.Write("[P]");
+        else if (zone.contenu.Contains("monstre") ) Console.Write("[M]");
+        else if (zone.contenu.Contains("crevasse")) Console.Write("[C]");
+        else if (zone.contenu.Contains("vent")) Console.Write("[V]");
+        else if (zone.contenu.Contains("odeur")) Console.Write("[O]"); 
+        else Console.Write("[ ]"); 
     }
 
     private void DessinerForet()
     {
-        for (int i = 0; i < NBPIECESLIGNE; i++)
+        for (int i = 0; i < NbZonesLigne; i++)
         {
-            for (int j = 0; j < NBPIECESLIGNE; j++)
+            for (int j = 0; j < NbZonesLigne; j++)
             {
                 DessinerZone(zonesForet[i, j]);
             }
@@ -103,7 +155,6 @@ public class ForetEnvironnement
         {
             Console.Clear();
             DessinerForet();
-            GetCurrentZone();
 
             Thread.Sleep(1000);
         }

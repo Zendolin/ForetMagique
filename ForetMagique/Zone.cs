@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class Zone
 {
     public int coordsX;
     public int coordsY;
-    public string contenu; // monstre,vent,crevasse,odeur,portail
+    public List<String> contenu = new List<string>(); // monstre,vent,crevasse,odeur,portail,Agent
 
     public Zone(int x, int y)
     {
@@ -16,6 +17,6 @@ public class Zone
     {
         coordsX = x;
         coordsY = y;
-        this.contenu = contenu;
+        this.contenu.Add(contenu);
     }
 }
