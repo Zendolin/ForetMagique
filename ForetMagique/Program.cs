@@ -6,19 +6,12 @@ using System.Threading.Tasks;
 
 class Program
 {
-    ForetEnvironnement foret;
-    Agent agent;
-
-
-    public Program()
-    {
-        foret = new ForetEnvironnement();
-        agent = new Agent(foret);
-    }
-
     static void Main(string[] args)
     {
+        ForetEnvironnement foret = new ForetEnvironnement();
+        Agent agent = new Agent(foret);
 
+        foret.thread.Start();
     }
 }
 

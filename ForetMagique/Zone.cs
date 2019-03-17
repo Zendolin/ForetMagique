@@ -4,7 +4,7 @@ public class Zone
 {
     public int coordsX;
     public int coordsY;
-    public string contenu; // monster,wind,pit,smell,portal
+    public string contenu; // monstre,vent,crevasse,odeur,portail
 
     public Zone(int x, int y)
     {

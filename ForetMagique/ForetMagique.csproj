@@ -46,16 +46,11 @@
   <ItemGroup>
     <Compile Include="Agent.cs" />
     <Compile Include="Capteur.cs" />
+    <Compile Include="Zone.cs" />
     <Compile Include="Effecteur.cs" />
-    <Compile Include="Foret.cs" />
-    <Compile Include="GestionConsole.cs" />
-    <Compile Include="ManoirEnvironnement.cs" />
-    <Compile Include="Pièce.cs" />
+    <Compile Include="ForetEnvironnement.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
