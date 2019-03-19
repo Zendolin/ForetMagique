@@ -36,6 +36,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,8 +51,50 @@
     <Compile Include="Zone.cs" />
     <Compile Include="Effecteur.cs" />
     <Compile Include="ForetEnvironnement.cs" />
+    <Compile Include="IGForet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IGForet.Designer.cs">
+      <DependentUpon>IGForet.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="IGForet.resx">
+      <DependentUpon>IGForet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="tiles\crevasse.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tiles\monstre.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tiles\agent.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tiles\portail.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tiles\odeur.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tiles\vent.PNG" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
