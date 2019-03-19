@@ -66,9 +66,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="IGForet.resx">
       <DependentUpon>IGForet.cs</DependentUpon>
     </EmbeddedResource>

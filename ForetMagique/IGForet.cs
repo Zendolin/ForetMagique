@@ -87,7 +87,7 @@ namespace ForetMagique
             int y = zone.coordsY;
 
             Image img = null;
-            switch (zone.contenu)
+            switch (zone.contenu[0])
             {
                 case "agent":
                     img = Properties.Resources.agent;

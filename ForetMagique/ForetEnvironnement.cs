@@ -9,8 +9,6 @@ public class ForetEnvironnement
 {
     public Thread thread;
     public int NbZonesLigne = 9;
-    private readonly int NBMONSTRES = 2;
-    private readonly int NBCREVASSES = 2;
 
     private int posAgentX;
     private int posAgentY;
@@ -37,24 +35,34 @@ public class ForetEnvironnement
 
     private void RemplirForet()
     {
-        List<String> aPlacer = new List<String>();
-        aPlacer.Add("portail");
-        zonesForet[0, 0].contenu.Add("agent");
-        for (int i = 0; i < NBMONSTRES; i++) aPlacer.Add("monstre");
-        for (int i = 0; i < NBCREVASSES; i++) aPlacer.Add("crevasse");
 
+        zonesForet[0, 0].contenu.Add("agent");
         Random rnd = new Random();
-        while (aPlacer.Count>0)
+        zonesForet[rnd.Next(1,NbZonesLigne), rnd.Next(1, NbZonesLigne)].contenu.Add("portail");
+
+        for (int x = 0; x < NbZonesLigne; x++)
         {
-            int x = rnd.Next(0, NbZonesLigne);
-            int y = rnd.Next(0, NbZonesLigne);
-            Console.WriteLine("Loop generation,count : " + aPlacer.Count + ", " + aPlacer.First() + " ,pos:" + x + ":" + y);
-            if (zonesForet[y, x].contenu.Count == 0)
+            for (int y = 0; y < NbZonesLigne; y++)
             {
-                zonesForet[y, x].contenu.Add(aPlacer.First());
-                aPlacer.RemoveAt(0);
+                if (zonesForet[y, x].contenu.Count == 0)
+                {
+                    int chance = rnd.Next(0, 100);
+                    if (chance < 10) zonesForet[y, x].contenu.Add("monstre");
+                }
             }
         }
+        for (int x = 0; x < NbZonesLigne; x++)
+        {
+            for (int y = 0; y < NbZonesLigne; y++)
+            {
+                if (zonesForet[y, x].contenu.Count == 0)
+                {
+                    int chance = rnd.Next(0, 100);
+                    if (chance < 10) zonesForet[y, x].contenu.Add("crevasse");
+                }
+            }
+        }
+
         Console.WriteLine("Monstres et crevasses placés");
         for (int x = 0; x < NbZonesLigne; x++)
         {
