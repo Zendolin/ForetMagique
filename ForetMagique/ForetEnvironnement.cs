@@ -14,11 +14,16 @@ public class ForetEnvironnement
     private int posAgentY;
     private Zone[,] zonesForet;
     private int performance = 0;
-    
-    public ForetEnvironnement()
+
+    private ForetMagique.IGForet ig;
+
+
+    public ForetEnvironnement(ForetMagique.IGForet ig)
     {
         thread = new Thread(new ThreadStart(ThreadLoop));
         zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
+        this.ig = ig;
+        this.ig.UpdatePanel(NbZonesLigne, NbZonesLigne);
         posAgentX = 0;
         posAgentY = 0;
         Console.WriteLine("Debut Creation Foret");
@@ -106,6 +111,7 @@ public class ForetEnvironnement
     {
         performance -= 1;
         zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
+        ig.SetZone(zonesForet[posAgentY, posAgentX]);
         switch (direction)
         {
             case ("gauche"):
@@ -122,15 +128,18 @@ public class ForetEnvironnement
                 break;
         }
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
+        ig.SetZone(zonesForet[posAgentY, posAgentX]);
         zonesForet[posAgentY, posAgentX].visité = true;
     }
 
     public void AllerSur(int x ,int y)
     {
         zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
+        ig.SetZone(zonesForet[posAgentY, posAgentX]);
         posAgentX = x;
         posAgentY = y;
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
+        ig.SetZone(zonesForet[posAgentY, posAgentX]);
         zonesForet[posAgentY, posAgentX].visité = true;
     }
 
@@ -157,7 +166,10 @@ public class ForetEnvironnement
         else if (zone.contenu.Contains("crevasse")) Console.Write("[C]");
         else if (zone.contenu.Contains("vent")) Console.Write("[V]");
         else if (zone.contenu.Contains("odeur")) Console.Write("[O]"); 
-        else Console.Write("[ ]"); 
+        else Console.Write("[ ]");
+
+        ig.SetZone(zone);
+
     }
 
     private void DessinerForet()
@@ -177,6 +189,8 @@ public class ForetEnvironnement
         while (Thread.CurrentThread.IsAlive)
         {
             Console.Clear();
+
+
             DessinerForet();
 
             Thread.Sleep(1000);

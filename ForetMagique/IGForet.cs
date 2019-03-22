@@ -73,7 +73,7 @@ namespace ForetMagique
                     pb.Width = widthPB;
                     pb.Height = heightPB;
 
-                    pb.SizeMode = PictureBoxSizeMode.CenterImage;
+                    pb.SizeMode = PictureBoxSizeMode.StretchImage;
 
                     pbs[i, j] = pb;
                     tlpForest.Controls.Add(pb);
@@ -87,6 +87,12 @@ namespace ForetMagique
             int y = zone.coordY;
 
             Image img = null;
+
+            if(zone.contenu.Count == 0)
+            {
+                return;
+            }
+
             switch (zone.contenu[0])
             {
                 case "agent":
@@ -115,10 +121,6 @@ namespace ForetMagique
             pbs[x, y].Image = img;
         }
 
-        public void Test_Click(Object sender, MouseEventArgs e)
-        {
-            UpdatePanel(4, 4);
-        }
 
         /*public void UpdateForest(int rows, int columns)
         {

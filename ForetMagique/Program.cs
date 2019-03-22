@@ -12,14 +12,16 @@ class Program
     {
         Console.Write("Debut");
 
-        ForetEnvironnement foret = new ForetEnvironnement();
+        ForetMagique.IGForet ig = new ForetMagique.IGForet();
+
+        ForetEnvironnement foret = new ForetEnvironnement(ig);
         Agent agent = new Agent(foret);
 
         Console.Write("ok");
         foret.thread.Start();
 
         Application.EnableVisualStyles();
-        Application.Run(new ForetMagique.IGForet());
+        Application.Run(ig);
     }
 }
 
