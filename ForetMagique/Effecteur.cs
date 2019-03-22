@@ -26,6 +26,11 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
         foret.DeplacementAgent("bas");
     }
 
+    public void AllerSur(int x ,int y)
+    {
+        foret.AllerSur(x, y);
+    }
+
     public void LancerCaillou(Zone z)
     {
         foret.LancerCaillou(z);

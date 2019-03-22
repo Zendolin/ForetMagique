@@ -9,9 +9,13 @@ public class Capteur // Classe qui récupère les données du manoir
         foret = f;
     }
 
-    public  Zone getZone() // récupère une copie de l'environnement actuel
+    public  Zone GetZone() // récupère la case actuelle de l'agent
     {
-        return null;
+        return foret.GetCurrentZone();
+    }
+    public Zone GetZone(int x , int y) // récupère la case actuelle de l'agent
+    {
+        return foret.GetZone(x,y);
     }
 
     public int getNBLignes()
@@ -19,14 +23,14 @@ public class Capteur // Classe qui récupère les données du manoir
         return foret.NbZonesLigne;
     }
 
-    public int getPosX()
+    public int GetPosX()
     {
-        return 0;
+        return foret.GetPosX();
     }
 
-    public int getPosY()
+    public int GetPosY()
     {
-        return 0;
+        return foret.GetPosY();
     }
  
 }

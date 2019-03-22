@@ -35,8 +35,8 @@ public class ForetEnvironnement
 
     private void RemplirForet()
     {
-
         zonesForet[0, 0].contenu.Add("agent");
+        zonesForet[0, 0].visité = true;
         Random rnd = new Random();
         zonesForet[rnd.Next(1,NbZonesLigne), rnd.Next(1, NbZonesLigne)].contenu.Add("portail");
 
@@ -97,6 +97,11 @@ public class ForetEnvironnement
         return zonesForet[posAgentY, posAgentX];
     }
 
+    public Zone GetZone(int x, int y)
+    {
+        return zonesForet[y, x];
+    }
+
     public void DeplacementAgent(string direction)
     {
         performance -= 1;
@@ -117,6 +122,16 @@ public class ForetEnvironnement
                 break;
         }
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
+        zonesForet[posAgentY, posAgentX].visité = true;
+    }
+
+    public void AllerSur(int x ,int y)
+    {
+        zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
+        posAgentX = x;
+        posAgentY = y;
+        zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
+        zonesForet[posAgentY, posAgentX].visité = true;
     }
 
     public void LancerCaillou(Zone z)
@@ -133,7 +148,7 @@ public class ForetEnvironnement
 
     private void DessinerZone(Zone zone) // Dessin en ASCII de la foret
     {
-        if (posAgentX == zone.coordsX && posAgentY == zone.coordsY)
+        if (posAgentX == zone.coordX && posAgentY == zone.coordY)
         {
             Console.Write("[A]");
         }
@@ -167,5 +182,8 @@ public class ForetEnvironnement
             Thread.Sleep(1000);
         }
     }
+
+    public int GetPosX() { return posAgentX; }
+    public int GetPosY() { return posAgentY; }
 }
 

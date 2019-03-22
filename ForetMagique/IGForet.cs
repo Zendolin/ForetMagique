@@ -83,8 +83,8 @@ namespace ForetMagique
 
         public void SetZone(Zone zone)
         {
-            int x = zone.coordsX;
-            int y = zone.coordsY;
+            int x = zone.coordX;
+            int y = zone.coordY;
 
             Image img = null;
             switch (zone.contenu[0])
