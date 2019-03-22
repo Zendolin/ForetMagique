@@ -30,7 +30,7 @@
         {
             this.btnDemarrer = new System.Windows.Forms.Button();
             this.tlpForest = new System.Windows.Forms.TableLayoutPanel();
-            this.btnTest = new System.Windows.Forms.Button();
+            this.btnBouger = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnDemarrer
@@ -48,7 +48,7 @@
             this.tlpForest.ColumnCount = 3;
             this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 22F));
+            this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tlpForest.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
             this.tlpForest.Location = new System.Drawing.Point(12, 12);
             this.tlpForest.Margin = new System.Windows.Forms.Padding(0);
@@ -60,22 +60,21 @@
             this.tlpForest.Size = new System.Drawing.Size(507, 444);
             this.tlpForest.TabIndex = 1;
             // 
-            // btnTest
+            // btnBouger
             // 
-            this.btnTest.Location = new System.Drawing.Point(444, 462);
-            this.btnTest.Name = "btnTest";
-            this.btnTest.Size = new System.Drawing.Size(75, 23);
-            this.btnTest.TabIndex = 2;
-            this.btnTest.Text = "Test";
-            this.btnTest.UseVisualStyleBackColor = true;
-            this.btnTest.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Test_Click);
+            this.btnBouger.Location = new System.Drawing.Point(444, 462);
+            this.btnBouger.Name = "btnBouger";
+            this.btnBouger.Size = new System.Drawing.Size(75, 23);
+            this.btnBouger.TabIndex = 2;
+            this.btnBouger.Text = "Bouger";
+            this.btnBouger.UseVisualStyleBackColor = true;
             // 
             // IGForet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(528, 497);
-            this.Controls.Add(this.btnTest);
+            this.Controls.Add(this.btnBouger);
             this.Controls.Add(this.tlpForest);
             this.Controls.Add(this.btnDemarrer);
             this.Name = "IGForet";
@@ -88,7 +87,7 @@
 
         private System.Windows.Forms.Button btnDemarrer;
         private System.Windows.Forms.TableLayoutPanel tlpForest;
-        private System.Windows.Forms.Button btnTest;
+        private System.Windows.Forms.Button btnBouger;
     }
 }
 
