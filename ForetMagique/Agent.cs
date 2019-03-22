@@ -9,13 +9,19 @@ public class Agent
     private Effecteur effecteur;
 
     private Zone[,] zonesConnues; // Belief
-    private List<string> listeActions = new List<string>(); // Intentions
+    private List<UnknowZone> zonesVisitables; // Les prochaines zones accessibles par l'agent
 
     public Agent(ForetEnvironnement env)
     {
         thread = new Thread(new ThreadStart(ThreadLoop));
         capteur = new Capteur(env);
         effecteur = new Effecteur(env);
+        zonesVisitables = new List<UnknowZone>();
+    }
+
+    public void Reflechir()
+    {
+
     }
 
     public void Agir()
@@ -52,7 +58,7 @@ public class Agent
             if (listeZoneParcourus.FirstOrDefault(l => l.coordX == target.coordY && l.coordY == target.coordY) != null)
                 break;
 
-            var adjacentSquares = getZonesProches(zoneAct.coordY, zoneAct.coordY);
+            var adjacentSquares = GetZonesProches(zoneAct.coordY, zoneAct.coordY);
             distanceDepart++;
 
             foreach (var adjacentSquare in adjacentSquares)
@@ -95,11 +101,12 @@ public class Agent
         // Tant que le thread n'est pas tué, on travaille
         while (Thread.CurrentThread.IsAlive)
         {
-
+            Reflechir();
+            Agir();
         }
     }
 
-    private List<Zone> getZonesProches(int x, int y)
+    private List<Zone> GetZonesProches(int x, int y)
     {
         List<Zone> zonesProches = new List<Zone>();
         if (x > 0 && zonesConnues[y, x - 1] != null) zonesProches.Add(zonesConnues[y, x - 1]);

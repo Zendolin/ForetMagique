@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Agent.cs" />
     <Compile Include="Capteur.cs" />
+    <Compile Include="UnknowZone.cs" />
     <Compile Include="Zone.cs" />
     <Compile Include="Effecteur.cs" />
     <Compile Include="ForetEnvironnement.cs" />
