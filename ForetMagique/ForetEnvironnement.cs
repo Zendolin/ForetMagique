@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public class ForetEnvironnement
 {
-    public Thread thread;
+   // public Thread thread;
     public int NbZonesLigne = 9;
 
     private int posAgentX;
@@ -20,7 +20,7 @@ public class ForetEnvironnement
 
     public ForetEnvironnement(ForetMagique.IGForet ig)
     {
-        thread = new Thread(new ThreadStart(ThreadLoop));
+    //    thread = new Thread(new ThreadStart(ThreadLoop));
         zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
         this.ig = ig;
         this.ig.UpdatePanel(NbZonesLigne, NbZonesLigne);
@@ -45,6 +45,7 @@ public class ForetEnvironnement
         Random rnd = new Random();
         zonesForet[rnd.Next(1,NbZonesLigne), rnd.Next(1, NbZonesLigne)].contenu.Add("portail");
 
+        //ajout aléatoire de monstres
         for (int x = 0; x < NbZonesLigne; x++)
         {
             for (int y = 0; y < NbZonesLigne; y++)
@@ -56,6 +57,7 @@ public class ForetEnvironnement
                 }
             }
         }
+        //ajout aléatoire de crevasses
         for (int x = 0; x < NbZonesLigne; x++)
         {
             for (int y = 0; y < NbZonesLigne; y++)
@@ -69,12 +71,26 @@ public class ForetEnvironnement
         }
 
         Console.WriteLine("Monstres et crevasses placés");
+        //ajout des informations
         for (int x = 0; x < NbZonesLigne; x++)
         {
             for (int y = 0; y < NbZonesLigne; y++)
             {
                 if (MonstreEstProche(x, y)) zonesForet[y, x].contenu.Add("odeur");
                 if (CrevasseEstProche(x, y)) zonesForet[y, x].contenu.Add("vent");
+                if (PortailEstProche(x, y)) zonesForet[y, x].contenu.Add("lumiere");
+            }
+        }
+
+        // ajout des cases voisines
+        for (int x = 0; x < NbZonesLigne; x++)
+        {
+            for (int y = 0; y < NbZonesLigne; y++)
+            {
+                if (x > 0) zonesForet[y, x].voisinGauche = zonesForet[y, x - 1];
+                if (x < NbZonesLigne-1) zonesForet[y, x].voisinDroite = zonesForet[y, x + 1];
+                if (y > 0) zonesForet[y, x].voisinHaut = zonesForet[y-1, x];
+                if (y < NbZonesLigne - 1) zonesForet[y, x].voisinBas = zonesForet[y+1, x];
             }
         }
     }
@@ -97,6 +113,15 @@ public class ForetEnvironnement
         else return false;
     }
 
+    private bool PortailEstProche(int x, int y)
+    {
+        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("portail")) return true;
+        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("portail")) return true;
+        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("portail")) return true;
+        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("portail")) return true;
+        else return false;
+    }
+
     public Zone GetCurrentZone()
     {
         return zonesForet[posAgentY, posAgentX];
@@ -106,7 +131,7 @@ public class ForetEnvironnement
     {
         return zonesForet[y, x];
     }
-
+    /*
     public void DeplacementAgent(string direction)
     {
         performance -= 1;
@@ -130,7 +155,8 @@ public class ForetEnvironnement
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
         ig.SetZone(zonesForet[posAgentY, posAgentX]);
         zonesForet[posAgentY, posAgentX].visité = true;
-    }
+        zonesForet[posAgentY, posAgentX].estFrontiere = false;
+    }*/
 
     public void AllerSur(int x ,int y)
     {
@@ -141,12 +167,14 @@ public class ForetEnvironnement
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
         ig.SetZone(zonesForet[posAgentY, posAgentX]);
         zonesForet[posAgentY, posAgentX].visité = true;
+        zonesForet[posAgentY, posAgentX].estFrontiere = false;
     }
 
     public void LancerCaillou(Zone z)
     {
         performance -= 10;
         if (z.contenu.Contains("monstre")) z.contenu.Remove("monstre");
+        ig.SetZone(zonesForet[z.coordY, z.coordX]);
     }
 
     public void PasserPortail()
@@ -172,7 +200,7 @@ public class ForetEnvironnement
 
     }
 
-    private void DessinerForet()
+    public void DessinerForet()
     {
         for (int i = 0; i < NbZonesLigne; i++)
         {

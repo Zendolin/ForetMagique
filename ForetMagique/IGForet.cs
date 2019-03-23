@@ -87,9 +87,12 @@ namespace ForetMagique
             int y = zone.coordY;
 
             Image img = null;
+            if (zone.visité) pbs[y, x].BackColor = Color.DarkGray;
+            else pbs[y, x].BackColor = Color.White;
 
-            if(zone.contenu.Count == 0)
+            if (zone.contenu.Count == 0)
             {
+                pbs[y, x].Image = null;
                 return;
             }
 
@@ -114,11 +117,13 @@ namespace ForetMagique
                     img = Properties.Resources.portail;
                     break;
                 default:
+                    img = null;
+                    pbs[y, x].InitialImage = null;
                     break;
 
             }
-
-            pbs[x, y].Image = img;
+            pbs[y, x].Image = img;
+            
         }
 
 

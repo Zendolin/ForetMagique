@@ -8,7 +8,7 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
 	{
         foret = f;
     }
-
+    /*
     public void DeplacerGauche()
     {
         foret.DeplacementAgent("gauche");
@@ -24,7 +24,7 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
     public void DeplacerBas()
     {
         foret.DeplacementAgent("bas");
-    }
+    }*/
 
     public void AllerSur(int x ,int y)
     {
@@ -39,5 +39,10 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
     public void PasserPortail()
     {
         foret.PasserPortail();
+    }
+
+    public void DessinerForet()
+    {
+        foret.DessinerForet();
     }
 }

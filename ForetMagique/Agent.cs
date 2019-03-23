@@ -9,24 +9,97 @@ public class Agent
     private Effecteur effecteur;
 
     private Zone[,] zonesConnues; // Belief
-    private List<UnknowZone> zonesVisitables; // Les prochaines zones accessibles par l'agent
+    private List<Zone> frontière; // Les prochaines zones accessibles par l'agent
 
     public Agent(ForetEnvironnement env)
     {
         thread = new Thread(new ThreadStart(ThreadLoop));
         capteur = new Capteur(env);
         effecteur = new Effecteur(env);
-        zonesVisitables = new List<UnknowZone>();
+        frontière = new List<Zone>();
+        zonesConnues = new Zone[capteur.getNBLignes(),capteur.getNBLignes()];
     }
 
-    public void Reflechir()
+    public Zone Reflechir()
     {
+        int posX = capteur.GetPosX();
+        int posY = capteur.GetPosX();
+        zonesConnues[posY, posX] = capteur.GetZone();
 
+        //lister frontiere
+        frontière = new List<Zone>();
+        foreach(Zone z in zonesConnues)
+        {
+            if (z != null)
+            {
+                frontière.AddRange(GetZonesVisitables(z.coordX, z.coordY));
+                frontière = frontière.Distinct<Zone>().ToList();
+            }
+        }
+        foreach (Zone z in frontière) if(z!=null) z.estFrontiere = true;
+
+        //calculer risques
+        foreach(Zone z in frontière)
+        {
+            z.probaPortail = 0;
+            z.probaMonstre = 0;
+            z.probaCrevasse = 0;
+            if(z.voisinGauche != null && z.voisinGauche.visité)
+            {
+                if (z.voisinGauche.contenu.Contains("odeur")) z.probaMonstre += 0.25;
+                if (z.voisinGauche.contenu.Contains("vent")) z.probaCrevasse += 0.25;
+                if (z.voisinGauche.contenu.Contains("lumiere")) z.probaPortail += 0.25;
+            }
+            if (z.voisinDroite != null && z.voisinDroite.visité)
+            {
+                if (z.voisinDroite.contenu.Contains("odeur")) z.probaMonstre += 0.25;
+                if (z.voisinDroite.contenu.Contains("vent")) z.probaCrevasse += 0.25;
+                if (z.voisinDroite.contenu.Contains("lumiere")) z.probaPortail += 0.25;
+            }
+            if (z.voisinHaut != null && z.voisinHaut.visité)
+            {
+                if (z.voisinHaut.contenu.Contains("odeur")) z.probaMonstre += 0.25;
+                if (z.voisinHaut.contenu.Contains("vent")) z.probaCrevasse += 0.25;
+                if (z.voisinHaut.contenu.Contains("lumiere")) z.probaPortail += 0.25;
+            }
+            if (z.voisinBas != null && z.voisinBas.visité)
+            {
+                if (z.voisinBas.contenu.Contains("odeur")) z.probaMonstre += 0.25;
+                if (z.voisinBas.contenu.Contains("vent")) z.probaCrevasse += 0.25;
+                if (z.voisinBas.contenu.Contains("lumiere")) z.probaPortail += 0.25;
+            }
+        }
+        List<Zone> frontiereTriée = new List<Zone>();
+        // choisir + safe
+
+        //priorité au portail
+        foreach (Zone z in frontière) if (z.probaPortail == 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail == 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail == 0.5) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail == 0.25) frontiereTriée.Add(z);
+        frontière = frontière.Except(frontiereTriée).ToList();
+        //priorité au monstra car on peut l'eliminer
+        foreach (Zone z in frontière) if (z.probaMonstre == 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaMonstre == 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaMonstre == 0.5) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaMonstre == 0.25) frontiereTriée.Add(z);
+        frontière = frontière.Except(frontiereTriée).ToList();
+        // si monstre alors lancer caillou
+        foreach (Zone z in frontière) if (z.probaCrevasse == 0.25) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse == 0.5) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse == 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse == 1) frontiereTriée.Add(z);
+        frontière = frontière.Except(frontiereTriée).ToList();
+
+        //go zone
+        return frontière[0];
     }
 
-    public void Agir()
+    public void Agir(Zone zoneChoisie)
     {
-
+        if (zoneChoisie.probaPortail <= 0.25 && zoneChoisie.probaMonstre >= 0.50)
+            effecteur.LancerCaillou(zoneChoisie);
+        AStar(zoneChoisie.coordX, zoneChoisie.coordY);
     }
 
     public void AStar(int x , int y)
@@ -58,7 +131,7 @@ public class Agent
             if (listeZoneParcourus.FirstOrDefault(l => l.coordX == target.coordY && l.coordY == target.coordY) != null)
                 break;
 
-            var adjacentSquares = GetZonesProches(zoneAct.coordY, zoneAct.coordY);
+            var adjacentSquares = GetZonesProches(zoneAct.coordY, zoneAct.coordY,target.coordX,target.coordY);
             distanceDepart++;
 
             foreach (var adjacentSquare in adjacentSquares)
@@ -98,22 +171,45 @@ public class Agent
 
     public void ThreadLoop()
     {
+        effecteur.DessinerForet();
+        Thread.Sleep(1000);
         // Tant que le thread n'est pas tué, on travaille
         while (Thread.CurrentThread.IsAlive)
         {
-            Reflechir();
-            Agir();
+            effecteur.DessinerForet();
+            Zone z = Reflechir();
+            Agir(z);
+            Thread.Sleep(1000);
+            
         }
     }
 
-    private List<Zone> GetZonesProches(int x, int y)
+    //retourne les cases accessibles depuis les coordonnés en paramètres
+    private List<Zone> GetZonesProches(int x, int y,int destX,int destY)
     {
         List<Zone> zonesProches = new List<Zone>();
+        if ((x - 1 == destX && y == destY) || (x+1 == destX && y == destY)|| (x== destX && y-1 == destY) || (x== destX && y+1 == destY))
+            zonesProches.Add(capteur.GetZone(x, y));
         if (x > 0 && zonesConnues[y, x - 1] != null) zonesProches.Add(zonesConnues[y, x - 1]);
         if (x <  capteur.getNBLignes()-1 &&  zonesConnues[y, x + 1] != null) zonesProches.Add(zonesConnues[y, x+1 ]);
         if (y > 0 && zonesConnues[y-1, x] != null) zonesProches.Add(zonesConnues[y-1, x]);
         if (y < capteur.getNBLignes() - 1 && zonesConnues[y+1, x] != null) zonesProches.Add(zonesConnues[y+1, x]);
         return zonesProches;
+    }
+
+    //retoure les cases de la frontiere
+    private List<Zone> GetZonesVisitables(int x, int y)
+    {
+        List<Zone> zonesVisitables = new List<Zone>();
+        if (x > 0 && !capteur.GetZone(x-1,y).visité)
+            zonesVisitables.Add(capteur.GetZone(x-1,y));
+        if (x < capteur.getNBLignes()-1 && !capteur.GetZone(x + 1, y).visité)
+            zonesVisitables.Add(capteur.GetZone(x+1,y));
+        if (y > 0 && !capteur.GetZone(x,y-1).visité)
+            zonesVisitables.Add(capteur.GetZone(x, y - 1));
+        if (y < capteur.getNBLignes() - 1 && !capteur.GetZone(x,y+1).visité)
+            zonesVisitables.Add(capteur.GetZone(x, y + 1));
+        return zonesVisitables;
     }
 
     //calcul distance destination

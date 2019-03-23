@@ -18,10 +18,11 @@ class Program
         Agent agent = new Agent(foret);
 
         Console.Write("ok");
-        foret.thread.Start();
-
+     //   foret.thread.Start();
+        agent.thread.Start();
         Application.EnableVisualStyles();
         Application.Run(ig);
+        
     }
 }
 
