@@ -93,6 +93,16 @@ namespace ForetMagique.Properties {
         /// <summary>
         ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap monstre_mort {
+            get {
+                object obj = ResourceManager.GetObject("monstre_mort", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap odeur {
             get {
                 object obj = ResourceManager.GetObject("odeur", resourceCulture);

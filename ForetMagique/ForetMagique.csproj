@@ -76,7 +76,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="tiles\monstre_mort.jpg" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="tiles\crevasse.PNG" />
   </ItemGroup>

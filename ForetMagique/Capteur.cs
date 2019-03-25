@@ -18,7 +18,6 @@ public class Capteur // Classe qui récupère les données du manoir
         return foret.GetZone(x,y);
     }
 
-
     public int getNBLignes()
     {
         return foret.NbZonesLigne;

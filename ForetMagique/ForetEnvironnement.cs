@@ -9,7 +9,7 @@ public class ForetEnvironnement
 {
    // public Thread thread;
     public int NbZonesLigne = 9;
-
+    GestionConsole gc;
     private int posAgentX;
     private int posAgentY;
     private Zone[,] zonesForet;
@@ -18,9 +18,9 @@ public class ForetEnvironnement
     private ForetMagique.IGForet ig;
 
 
-    public ForetEnvironnement(ForetMagique.IGForet ig)
+    public ForetEnvironnement(ForetMagique.IGForet ig,GestionConsole gc)
     {
-    //    thread = new Thread(new ThreadStart(ThreadLoop));
+        this.gc = gc;
         zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
         this.ig = ig;
         this.ig.UpdatePanel(NbZonesLigne, NbZonesLigne);
@@ -131,32 +131,6 @@ public class ForetEnvironnement
     {
         return zonesForet[y, x];
     }
-    /*
-    public void DeplacementAgent(string direction)
-    {
-        performance -= 1;
-        zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
-        ig.SetZone(zonesForet[posAgentY, posAgentX]);
-        switch (direction)
-        {
-            case ("gauche"):
-                posAgentX -=1;
-                break;
-            case ("droite"):
-                posAgentX += 1;
-                break;
-            case ("haut"):
-                posAgentY -= 1;
-                break;
-            case ("bas"):
-                posAgentY += 1;
-                break;
-        }
-        zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
-        ig.SetZone(zonesForet[posAgentY, posAgentX]);
-        zonesForet[posAgentY, posAgentX].visité = true;
-        zonesForet[posAgentY, posAgentX].estFrontiere = false;
-    }*/
 
     public void AllerSur(int x ,int y)
     {
@@ -164,6 +138,8 @@ public class ForetEnvironnement
         ig.SetZone(zonesForet[posAgentY, posAgentX]);
         posAgentX = x;
         posAgentY = y;
+        performance -= 1;
+        ig.updatePerf(performance);
         zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
         ig.SetZone(zonesForet[posAgentY, posAgentX]);
         zonesForet[posAgentY, posAgentX].visité = true;
@@ -173,17 +149,19 @@ public class ForetEnvironnement
     public void LancerCaillou(Zone z)
     {
         performance -= 10;
-        if (z.contenu.Contains("monstre")) z.contenu.Remove("monstre");
+        if (z.contenu.Contains("monstre")) { z.contenu.Remove("monstre"); z.contenu.Add("monstre_mort"); }
         ig.SetZone(zonesForet[z.coordY, z.coordX]);
+        ig.updatePerf(performance);
     }
 
     public void PasserPortail()
     {
         performance += 10 * NbZonesLigne * NbZonesLigne;
+        ig.updatePerf(performance);
         //TODO niveau suivant
     }
 
-    private void DessinerZone(Zone zone) // Dessin en ASCII de la foret
+    public void DessinerZone(Zone zone) // Dessin en ASCII de la foret
     {
         if (posAgentX == zone.coordX && posAgentY == zone.coordY)
         {

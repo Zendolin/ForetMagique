@@ -16,6 +16,7 @@ namespace ForetMagique
         public static readonly int NB_CASE_COLONNE = 3;
 
         private PictureBox[,] pbs;
+        private int performance;
 
         private int widthPB;
         private int heightPB;
@@ -87,8 +88,9 @@ namespace ForetMagique
             int y = zone.coordY;
 
             Image img = null;
-            if (zone.visité) pbs[y, x].BackColor = Color.DarkGray;
-            else pbs[y, x].BackColor = Color.White;
+            if(zone.estFrontiere) pbs[y, x].BackColor = Color.Red;
+            else if (zone.visité) pbs[y, x].BackColor = Color.White;
+            else pbs[y, x].BackColor = Color.DarkGray;
 
             if (zone.contenu.Count == 0)
             {
@@ -100,6 +102,9 @@ namespace ForetMagique
             {
                 case "agent":
                     img = Properties.Resources.agent;
+                    break;
+                case "monstre_mort":
+                    img = Properties.Resources.monstre_mort;
                     break;
                 case "monstre":
                     img = Properties.Resources.monstre;
@@ -122,10 +127,13 @@ namespace ForetMagique
                     break;
 
             }
-            pbs[y, x].Image = img;
-            
+            pbs[y, x].Image = img;  
         }
 
+        public void updatePerf(int perf)
+        {
+            performance = perf;
+        }
 
         /*public void UpdateForest(int rows, int columns)
         {

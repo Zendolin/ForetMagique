@@ -10,14 +10,13 @@ class Program
     [STAThread]
     static void Main(string[] args)
     {
-        Console.Write("Debut");
+        GestionConsole gc = new GestionConsole();
 
         ForetMagique.IGForet ig = new ForetMagique.IGForet();
 
-        ForetEnvironnement foret = new ForetEnvironnement(ig);
-        Agent agent = new Agent(foret);
+        ForetEnvironnement foret = new ForetEnvironnement(ig,gc);
+        Agent agent = new Agent(foret,gc);
 
-        Console.Write("ok");
      //   foret.thread.Start();
         agent.thread.Start();
         Application.EnableVisualStyles();

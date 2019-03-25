@@ -5,15 +5,17 @@ using static System.Linq.Enumerable;
 public class Agent
 {
     public Thread thread;
+    GestionConsole gc;
     private Capteur capteur;
     private Effecteur effecteur;
 
     private Zone[,] zonesConnues; // Belief
     private List<Zone> frontière; // Les prochaines zones accessibles par l'agent
 
-    public Agent(ForetEnvironnement env)
+    public Agent(ForetEnvironnement env,GestionConsole gc)
     {
         thread = new Thread(new ThreadStart(ThreadLoop));
+        this.gc = gc;
         capteur = new Capteur(env);
         effecteur = new Effecteur(env);
         frontière = new List<Zone>();
@@ -23,10 +25,11 @@ public class Agent
     public Zone Reflechir()
     {
         int posX = capteur.GetPosX();
-        int posY = capteur.GetPosX();
+        int posY = capteur.GetPosY();
         zonesConnues[posY, posX] = capteur.GetZone();
 
         //lister frontiere
+        gc.AddConsole("Listage frontiere");
         frontière = new List<Zone>();
         foreach(Zone z in zonesConnues)
         {
@@ -37,8 +40,9 @@ public class Agent
             }
         }
         foreach (Zone z in frontière) if(z!=null) z.estFrontiere = true;
-
-        //calculer risques
+        foreach (Zone z in frontière) effecteur.DessinerZone(z);
+            //calculer risques
+            gc.AddConsole("Calcul des risques");
         foreach(Zone z in frontière)
         {
             z.probaPortail = 0;
@@ -78,6 +82,7 @@ public class Agent
         foreach (Zone z in frontière) if (z.probaPortail == 0.5) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaPortail == 0.25) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
+        foreach (Zone z in frontière) if (z.probaMonstre == 0 && z.probaCrevasse == 0) frontiereTriée.Add(z);
         //priorité au monstra car on peut l'eliminer
         foreach (Zone z in frontière) if (z.probaMonstre == 1) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaMonstre == 0.75) frontiereTriée.Add(z);
@@ -90,31 +95,36 @@ public class Agent
         foreach (Zone z in frontière) if (z.probaCrevasse == 0.75) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaCrevasse == 1) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
+        // les cases sans dangers
+        foreach (Zone z in frontière)frontiereTriée.Add(z);
 
         //go zone
-        return frontière[0];
+        gc.AddConsole("Case choisie" + frontiereTriée[0]);
+        return frontiereTriée[0];
     }
 
     public void Agir(Zone zoneChoisie)
     {
-        if (zoneChoisie.probaPortail <= 0.25 && zoneChoisie.probaMonstre >= 0.50)
-            effecteur.LancerCaillou(zoneChoisie);
         AStar(zoneChoisie.coordX, zoneChoisie.coordY);
     }
 
     public void AStar(int x , int y)
     {
+        gc.AddConsole("Debut A*");
         Zone zoneAct = null;
-        var start = capteur.GetZone();
-        var target = capteur.GetZone(x,y);
-        var listeZonesPossibles = new List<Zone>();
-        var listeZoneParcourus = new List<Zone>();
+        Zone start = capteur.GetZone();
+        Zone target = capteur.GetZone(x,y);
+        List<Zone> listeZonesPossibles = new List<Zone>();
+        List<Zone> listeZoneParcourus = new List<Zone>();
         int distanceDepart = 0;
 
+        listeZonesPossibles.Add(start);
+        gc.AddConsole("("+target.coordX+","+target.coordY+")");
+        gc.Write();
         while (listeZonesPossibles.Count > 0)
         {
             // get the square with the lowest F score
-            var plusPetit = listeZonesPossibles.Min(l => l.distanceSomme);
+            int plusPetit = listeZonesPossibles.Min(l => l.distanceSomme);
             zoneAct = listeZonesPossibles.First(l => l.distanceSomme == plusPetit);
 
             // add the current square to the closed list
@@ -122,23 +132,23 @@ public class Agent
 
             // show current square on the map
             effecteur.AllerSur(zoneAct.coordX, zoneAct.coordY);
-            Thread.Sleep(1000);
+            Thread.Sleep(300);
 
             // remove it from the open list
             listeZonesPossibles.Remove(zoneAct);
 
             // if we added the destination to the closed list, we've found a path
-            if (listeZoneParcourus.FirstOrDefault(l => l.coordX == target.coordY && l.coordY == target.coordY) != null)
+            if (listeZoneParcourus.FirstOrDefault(l => l.coordX == target.coordX && l.coordY == target.coordY) != null)
                 break;
 
-            var adjacentSquares = GetZonesProches(zoneAct.coordY, zoneAct.coordY,target.coordX,target.coordY);
+            var adjacentSquares = GetZonesProches(zoneAct.coordX, zoneAct.coordY,target.coordX,target.coordY);
             distanceDepart++;
 
             foreach (var adjacentSquare in adjacentSquares)
             {
                 // if this adjacent square is already in the closed list, ignore it
                 if (listeZoneParcourus.FirstOrDefault(l => l.coordX == adjacentSquare.coordX
-                        && l.coordX == adjacentSquare.coordY) != null)
+                        && l.coordY == adjacentSquare.coordY) != null)
                     continue;
 
                 // if it's not in the open list...
@@ -176,10 +186,15 @@ public class Agent
         // Tant que le thread n'est pas tué, on travaille
         while (Thread.CurrentThread.IsAlive)
         {
+            Console.Clear();
             effecteur.DessinerForet();
+
+            //gc.AddConsole(posAspiX + ":" + posAspiY);
+            gc.Write();
+        
             Zone z = Reflechir();
             Agir(z);
-            Thread.Sleep(1000);
+            Thread.Sleep(300);
             
         }
     }
@@ -189,7 +204,13 @@ public class Agent
     {
         List<Zone> zonesProches = new List<Zone>();
         if ((x - 1 == destX && y == destY) || (x+1 == destX && y == destY)|| (x== destX && y-1 == destY) || (x== destX && y+1 == destY))
-            zonesProches.Add(capteur.GetZone(x, y));
+        {
+            Zone z = capteur.GetZone(destX, destY);
+            zonesProches.Add(z);
+            if (z.probaPortail <= 0.25 && z.probaMonstre >= 0.50)
+                effecteur.LancerCaillou(z);
+        }
+            
         if (x > 0 && zonesConnues[y, x - 1] != null) zonesProches.Add(zonesConnues[y, x - 1]);
         if (x <  capteur.getNBLignes()-1 &&  zonesConnues[y, x + 1] != null) zonesProches.Add(zonesConnues[y, x+1 ]);
         if (y > 0 && zonesConnues[y-1, x] != null) zonesProches.Add(zonesConnues[y-1, x]);
