@@ -8,18 +8,19 @@ public class Agent
     GestionConsole gc;
     private Capteur capteur;
     private Effecteur effecteur;
+    private bool threadActif = true;
 
     private Zone[,] zonesConnues; // Belief
     private List<Zone> frontière; // Les prochaines zones accessibles par l'agent
 
     public Agent(ForetEnvironnement env,GestionConsole gc)
     {
-        thread = new Thread(new ThreadStart(ThreadLoop));
+        thread = new Thread(new ThreadStart(ThreadProc));
         this.gc = gc;
         capteur = new Capteur(env);
         effecteur = new Effecteur(env);
-        frontière = new List<Zone>();
-        zonesConnues = new Zone[capteur.getNBLignes(),capteur.getNBLignes()];
+        //frontière = new List<Zone>();
+        //zonesConnues = new Zone[capteur.getNBLignes(),capteur.getNBLignes()];
     }
 
     public Zone Reflechir()
@@ -72,6 +73,10 @@ public class Agent
                 if (z.voisinBas.contenu.Contains("vent")) z.probaCrevasse += 0.25;
                 if (z.voisinBas.contenu.Contains("lumiere")) z.probaPortail += 0.25;
             }
+            int n = capteur.getNBLignes();
+            // une zone sur le bord de la carte est plus risqué
+            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordX == 0 || z.coordY == 0 || z.coordX == n - 1 || z.coordY == n - 1)) z.probaMonstre += 0.25;
+            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordX == 0 || z.coordY == 0 || z.coordX == n - 1 || z.coordY == n - 1)) z.probaMonstre += 0.25;
         }
         List<Zone> frontiereTriée = new List<Zone>();
         // choisir + safe
@@ -83,23 +88,25 @@ public class Agent
         foreach (Zone z in frontière) if (z.probaPortail == 0.25) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         foreach (Zone z in frontière) if (z.probaMonstre == 0 && z.probaCrevasse == 0) frontiereTriée.Add(z);
-        //priorité au monstra car on peut l'eliminer
+        frontière = frontière.Except(frontiereTriée).ToList();
+        
+        //priorité au monstre car on peut l'eliminer
         foreach (Zone z in frontière) if (z.probaMonstre == 1) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaMonstre == 0.75) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaMonstre == 0.5) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaMonstre == 0.25) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
-        // si monstre alors lancer caillou
+
         foreach (Zone z in frontière) if (z.probaCrevasse == 0.25) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaCrevasse == 0.5) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaCrevasse == 0.75) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaCrevasse == 1) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
-        // les cases sans dangers
+        
         foreach (Zone z in frontière)frontiereTriée.Add(z);
 
         //go zone
-        gc.AddConsole("Case choisie" + frontiereTriée[0]);
+        gc.AddConsole("Case choisie " + frontiereTriée[0]);
         return frontiereTriée[0];
     }
 
@@ -131,7 +138,17 @@ public class Agent
             listeZoneParcourus.Add(zoneAct);
 
             // show current square on the map
-            effecteur.AllerSur(zoneAct.coordX, zoneAct.coordY);
+            int etat = effecteur.AllerSur(zoneAct.coordX, zoneAct.coordY);
+            if(etat == 1)
+            {
+                threadActif = false;
+                effecteur.PasserPortail();
+            }
+            else if (etat == -1)
+            {
+                threadActif = false;
+                effecteur.Mourir();
+            }
             Thread.Sleep(300);
 
             // remove it from the open list
@@ -179,12 +196,15 @@ public class Agent
         }
     }
 
-    public void ThreadLoop()
+    public void ThreadProc()
     {
+        frontière = new List<Zone>();
+        zonesConnues = new Zone[capteur.getNBLignes(), capteur.getNBLignes()];
         effecteur.DessinerForet();
+        threadActif = true;
         Thread.Sleep(1000);
         // Tant que le thread n'est pas tué, on travaille
-        while (Thread.CurrentThread.IsAlive)
+        while (threadActif)
         {
             Console.Clear();
             effecteur.DessinerForet();
@@ -194,8 +214,7 @@ public class Agent
         
             Zone z = Reflechir();
             Agir(z);
-            Thread.Sleep(300);
-            
+            Thread.Sleep(300);    
         }
     }
 
@@ -207,8 +226,7 @@ public class Agent
         {
             Zone z = capteur.GetZone(destX, destY);
             zonesProches.Add(z);
-            if (z.probaPortail <= 0.25 && z.probaMonstre >= 0.50)
-                effecteur.LancerCaillou(z);
+            if (z.probaMonstre >= 0.25) effecteur.LancerCaillou(z);
         }
             
         if (x > 0 && zonesConnues[y, x - 1] != null) zonesProches.Add(zonesConnues[y, x - 1]);

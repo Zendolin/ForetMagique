@@ -16,8 +16,10 @@ class Program
 
         ForetEnvironnement foret = new ForetEnvironnement(ig,gc);
         Agent agent = new Agent(foret,gc);
+        foret.agent = agent;
 
-     //   foret.thread.Start();
+        ig.foret = foret;
+
         agent.thread.Start();
         Application.EnableVisualStyles();
         Application.Run(ig);

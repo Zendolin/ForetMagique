@@ -9,9 +9,9 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
         foret = f;
     }
 
-    public void AllerSur(int x ,int y)
+    public int AllerSur(int x ,int y)
     {
-        foret.AllerSur(x, y);
+        return foret.AllerSur(x, y);
     }
 
     public void LancerCaillou(Zone z)
@@ -22,6 +22,11 @@ public class Effecteur // Classe qui agit sur le manoir , déplace l'aspirateur 
     public void PasserPortail()
     {
         foret.PasserPortail();
+    }
+
+    public void Mourir()
+    {
+        foret.Mourir();
     }
 
     public void DessinerZone(Zone z)

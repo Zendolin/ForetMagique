@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 public class ForetEnvironnement
 {
    // public Thread thread;
-    public int NbZonesLigne = 9;
+    public int NbZonesLigne = 3;
     GestionConsole gc;
     private int posAgentX;
     private int posAgentY;
     private Zone[,] zonesForet;
     private int performance = 0;
+    public Agent agent;
 
     private ForetMagique.IGForet ig;
 
@@ -132,18 +133,23 @@ public class ForetEnvironnement
         return zonesForet[y, x];
     }
 
-    public void AllerSur(int x ,int y)
+    public int AllerSur(int x ,int y)
     {
         zonesForet[posAgentY, posAgentX].contenu.RemoveAt(0);
         ig.SetZone(zonesForet[posAgentY, posAgentX]);
         posAgentX = x;
         posAgentY = y;
         performance -= 1;
-        ig.updatePerf(performance);
-        zonesForet[posAgentY, posAgentX].contenu.Insert(0, "agent");
-        ig.SetZone(zonesForet[posAgentY, posAgentX]);
-        zonesForet[posAgentY, posAgentX].visité = true;
-        zonesForet[posAgentY, posAgentX].estFrontiere = false;
+        ig.UpdatePerf(performance);
+        Zone z = zonesForet[posAgentY, posAgentX];
+        z.contenu.Insert(0, "agent");
+        ig.SetZone(z);
+        z.visité = true;
+        z.estFrontiere = false;
+        if (z.contenu.Contains("monstre") || z.contenu.Contains("crevasse"))
+            return -1;
+        else if (z.contenu.Contains("portail")) return 1;
+        else return 0;
     }
 
     public void LancerCaillou(Zone z)
@@ -151,14 +157,41 @@ public class ForetEnvironnement
         performance -= 10;
         if (z.contenu.Contains("monstre")) { z.contenu.Remove("monstre"); z.contenu.Add("monstre_mort"); }
         ig.SetZone(zonesForet[z.coordY, z.coordX]);
-        ig.updatePerf(performance);
+        ig.UpdatePerf(performance);
     }
 
     public void PasserPortail()
     {
         performance += 10 * NbZonesLigne * NbZonesLigne;
-        ig.updatePerf(performance);
+        ig.UpdatePerf(performance);
+        gc.AddConsole("Portail Atteint ! performance" + performance);
         //TODO niveau suivant
+        NbZonesLigne += 1;
+        zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
+        this.ig.SetPanelThreadSafe(NbZonesLigne, NbZonesLigne);
+        posAgentX = 0;
+        posAgentY = 0;
+        Console.WriteLine("Debut Creation Foret");
+        for (int x = 0; x < NbZonesLigne; x++)
+        {
+            for (int y = 0; y < NbZonesLigne; y++)
+            {
+                zonesForet[y, x] = new Zone(x, y);
+            }
+        }
+        Console.WriteLine("Creation ForetOK");
+        RemplirForet();
+
+
+        agent = new Agent(this, this.gc);
+        agent.thread.Start();
+    }
+
+    public void Mourir()
+    {
+        performance -= 10 * NbZonesLigne * NbZonesLigne;
+        ig.UpdatePerf(performance);
+        //TODO recommencer
     }
 
     public void DessinerZone(Zone zone) // Dessin en ASCII de la foret

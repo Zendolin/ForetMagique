@@ -36,5 +36,11 @@ public class Zone
         this.contenu.Add(contenu);
     }
 
+    override
+    public String ToString()
+    {
+        return String.Format("x: {0}, y: {1}", coordX, coordY);
+    }
+
     
 }
