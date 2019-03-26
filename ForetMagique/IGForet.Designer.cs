@@ -32,6 +32,7 @@
             this.tlpForest = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.chckBoxAuto = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnBouger
@@ -49,7 +50,7 @@
             this.tlpForest.ColumnCount = 3;
             this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tlpForest.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.tlpForest.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
             this.tlpForest.Location = new System.Drawing.Point(12, 12);
             this.tlpForest.Margin = new System.Windows.Forms.Padding(0);
@@ -74,7 +75,7 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(199, 467);
+            this.checkBox1.Location = new System.Drawing.Point(255, 467);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(110, 21);
             this.checkBox1.TabIndex = 4;
@@ -82,11 +83,23 @@
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // chckBoxAuto
+            // 
+            this.chckBoxAuto.AutoSize = true;
+            this.chckBoxAuto.Location = new System.Drawing.Point(128, 467);
+            this.chckBoxAuto.Name = "chckBoxAuto";
+            this.chckBoxAuto.Size = new System.Drawing.Size(98, 21);
+            this.chckBoxAuto.TabIndex = 5;
+            this.chckBoxAuto.Text = "Mode Auto";
+            this.chckBoxAuto.UseVisualStyleBackColor = true;
+            this.chckBoxAuto.CheckedChanged += new System.EventHandler(this.chckBoxAuto_CheckedChanged);
+            // 
             // IGForet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(528, 497);
+            this.Controls.Add(this.chckBoxAuto);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tlpForest);
@@ -104,6 +117,7 @@
         private System.Windows.Forms.TableLayoutPanel tlpForest;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox chckBoxAuto;
     }
 }
 

@@ -52,6 +52,11 @@ namespace ForetMagique
             {
                 SetPanel(rows, columns);
             }));
+            chckBoxAuto.Invoke(new MethodInvoker(delegate
+            {
+                chckBoxAuto.Checked = false;
+            }));
+           
         }
 
         public void SetPanel(int rows, int columns)
@@ -183,12 +188,17 @@ namespace ForetMagique
 
         private void btnDemarrer_Click(object sender, EventArgs e)
         {
-
+            foret.agent.peutAvancer = true;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             foret.DessinerForet();
+        }
+
+        private void chckBoxAuto_CheckedChanged(object sender, EventArgs e)
+        {
+            foret.agent.modeAuto = chckBoxAuto.Checked;
         }
     }
 }

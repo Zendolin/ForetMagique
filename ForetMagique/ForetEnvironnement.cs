@@ -155,7 +155,7 @@ public class ForetEnvironnement
     public void LancerCaillou(Zone z)
     {
         performance -= 10;
-        if (z.contenu.Contains("monstre")) { z.contenu.Remove("monstre"); z.contenu.Add("monstre_mort"); }
+        if (z.contenu.Contains("monstre")) { z.contenu.Remove("monstre"); z.contenu.Insert(0,"monstre_mort"); }
         ig.SetZone(zonesForet[z.coordY, z.coordX]);
         ig.UpdatePerf(performance);
     }
@@ -165,8 +165,34 @@ public class ForetEnvironnement
         performance += 10 * NbZonesLigne * NbZonesLigne;
         ig.UpdatePerf(performance);
         gc.AddConsole("Portail Atteint ! performance" + performance);
-        //TODO niveau suivant
+        //niveau suivant
         NbZonesLigne += 1;
+        zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
+        this.ig.SetPanelThreadSafe(NbZonesLigne, NbZonesLigne);
+        posAgentX = 0;
+        posAgentY = 0;
+        Console.WriteLine("Debut Creation Foret");
+        for (int x = 0; x < NbZonesLigne; x++)
+        {
+            for (int y = 0; y < NbZonesLigne; y++)
+            {
+                zonesForet[y, x] = new Zone(x, y);
+            }
+        }
+        Console.WriteLine("Creation Foret OK");
+        RemplirForet();
+
+
+        agent = new Agent(this, this.gc);
+        agent.thread.Start();
+    }
+
+    public void Mourir()
+    {
+        performance -= 10 * NbZonesLigne * NbZonesLigne;
+        ig.UpdatePerf(performance);
+        gc.AddConsole("Perdu!");
+
         zonesForet = new Zone[NbZonesLigne, NbZonesLigne];
         this.ig.SetPanelThreadSafe(NbZonesLigne, NbZonesLigne);
         posAgentX = 0;
@@ -185,13 +211,6 @@ public class ForetEnvironnement
 
         agent = new Agent(this, this.gc);
         agent.thread.Start();
-    }
-
-    public void Mourir()
-    {
-        performance -= 10 * NbZonesLigne * NbZonesLigne;
-        ig.UpdatePerf(performance);
-        //TODO recommencer
     }
 
     public void DessinerZone(Zone zone) // Dessin en ASCII de la foret
@@ -222,7 +241,7 @@ public class ForetEnvironnement
             Console.Write("\n");
         }
     }
-
+    /*
     public void ThreadLoop()
     {
         while (Thread.CurrentThread.IsAlive)
@@ -234,7 +253,7 @@ public class ForetEnvironnement
 
             Thread.Sleep(1000);
         }
-    }
+    }*/
 
     public int GetPosX() { return posAgentX; }
     public int GetPosY() { return posAgentY; }

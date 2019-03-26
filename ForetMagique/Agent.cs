@@ -9,6 +9,8 @@ public class Agent
     private Capteur capteur;
     private Effecteur effecteur;
     private bool threadActif = true;
+    public bool peutAvancer = false;
+    public bool modeAuto = false;
 
     private Zone[,] zonesConnues; // Belief
     private List<Zone> frontière; // Les prochaines zones accessibles par l'agent
@@ -75,32 +77,37 @@ public class Agent
             }
             int n = capteur.getNBLignes();
             // une zone sur le bord de la carte est plus risqué
-            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordX == 0 || z.coordY == 0 || z.coordX == n - 1 || z.coordY == n - 1)) z.probaMonstre += 0.25;
+            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordX == 0)) z.probaMonstre += 0.25;
+            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordY == 0)) z.probaMonstre += 0.25;
+            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordX == n - 1)) z.probaMonstre += 0.25;
+            if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordY == n - 1)) z.probaMonstre += 0.25;
+
             if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordX == 0 || z.coordY == 0 || z.coordX == n - 1 || z.coordY == n - 1)) z.probaMonstre += 0.25;
+            VerifierExistance(z);
         }
         List<Zone> frontiereTriée = new List<Zone>();
-        // choisir + safe
 
+        // choisir + safe
         //priorité au portail
-        foreach (Zone z in frontière) if (z.probaPortail == 1) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaPortail == 0.75) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaPortail == 0.5) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaPortail == 0.25) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.75 && z.probaPortail < 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.5 && z.probaPortail < 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         foreach (Zone z in frontière) if (z.probaMonstre == 0 && z.probaCrevasse == 0) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         
         //priorité au monstre car on peut l'eliminer
-        foreach (Zone z in frontière) if (z.probaMonstre == 1) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaMonstre == 0.75) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaMonstre == 0.5) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaMonstre == 0.25) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaMonstre >= 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.75 && z.probaPortail < 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.5 && z.probaPortail < 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
 
-        foreach (Zone z in frontière) if (z.probaCrevasse == 0.25) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaCrevasse == 0.5) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaCrevasse == 0.75) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaCrevasse == 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.5 && z.probaPortail < 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaPortail >= 0.75 && z.probaPortail < 1) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse >= 1) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         
         foreach (Zone z in frontière)frontiereTriée.Add(z);
@@ -142,6 +149,8 @@ public class Agent
             if(etat == 1)
             {
                 threadActif = false;
+                Thread.Sleep(1000);
+                gc.AddConsole("J'ai trouvé le Portail!");
                 effecteur.PasserPortail();
             }
             else if (etat == -1)
@@ -206,14 +215,17 @@ public class Agent
         // Tant que le thread n'est pas tué, on travaille
         while (threadActif)
         {
+            if(peutAvancer || modeAuto)
+            {
+                Zone z = Reflechir();
+                Agir(z);
+                peutAvancer = false;
+            }
             Console.Clear();
-            effecteur.DessinerForet();
+           // effecteur.DessinerForet();
 
             //gc.AddConsole(posAspiX + ":" + posAspiY);
             gc.Write();
-        
-            Zone z = Reflechir();
-            Agir(z);
             Thread.Sleep(300);    
         }
     }
@@ -249,6 +261,36 @@ public class Agent
         if (y < capteur.getNBLignes() - 1 && !capteur.GetZone(x,y+1).visité)
             zonesVisitables.Add(capteur.GetZone(x, y + 1));
         return zonesVisitables;
+    }
+
+    // Si l'une des zone voisines ne contient pas d'indicateur , alors on est certain qu'il n'y a rien sur la zone
+    public void VerifierExistance(Zone z)
+    {
+        bool peutContenirMonstre = true;
+        bool peutContenirCrevasse = true;
+
+        if (z.voisinGauche != null && z.voisinGauche.visité)
+        {
+            if (!z.voisinGauche.contenu.Contains("odeur")) peutContenirMonstre = false;
+            if (!z.voisinGauche.contenu.Contains("vent")) peutContenirCrevasse = false;
+        }
+        if (z.voisinDroite != null && z.voisinDroite.visité)
+        {
+            if (!z.voisinDroite.contenu.Contains("odeur")) peutContenirMonstre = false;
+            if (!z.voisinDroite.contenu.Contains("vent")) peutContenirCrevasse = false;
+        }
+        if (z.voisinHaut != null && z.voisinHaut.visité)
+        {
+            if (!z.voisinHaut.contenu.Contains("odeur")) peutContenirMonstre = false;
+            if (!z.voisinHaut.contenu.Contains("vent")) peutContenirCrevasse = false;
+        }
+        if (z.voisinBas != null && z.voisinBas.visité)
+        {
+            if (!z.voisinBas.contenu.Contains("odeur")) peutContenirMonstre = false;
+            if (!z.voisinBas.contenu.Contains("vent")) peutContenirCrevasse = false;
+        }
+        if (!peutContenirMonstre) z.probaMonstre = 0;
+        if (!peutContenirCrevasse) z.probaCrevasse = 0;
     }
 
     //calcul distance destination
