@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using static System.Linq.Enumerable;
 public class Agent
@@ -21,12 +22,11 @@ public class Agent
         this.gc = gc;
         capteur = new Capteur(env);
         effecteur = new Effecteur(env);
-        //frontière = new List<Zone>();
-        //zonesConnues = new Zone[capteur.getNBLignes(),capteur.getNBLignes()];
     }
 
     public Zone Reflechir()
     {
+        // on met a jour les connaissances
         int posX = capteur.GetPosX();
         int posY = capteur.GetPosY();
         zonesConnues[posY, posX] = capteur.GetZone();
@@ -43,9 +43,9 @@ public class Agent
             }
         }
         foreach (Zone z in frontière) if(z!=null) z.estFrontiere = true;
-        foreach (Zone z in frontière) effecteur.DessinerZone(z);
-            //calculer risques
-            gc.AddConsole("Calcul des risques");
+        effecteur.DessinerForet();
+        //calculer risques
+        gc.AddConsole("Calcul des risques");
         foreach(Zone z in frontière)
         {
             z.probaPortail = 0;
@@ -82,19 +82,23 @@ public class Agent
             if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordX == n - 1)) z.probaMonstre += 0.25;
             if (z.probaMonstre >= 0.25 && z.probaMonstre < 1 && (z.coordY == n - 1)) z.probaMonstre += 0.25;
 
-            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordX == 0 || z.coordY == 0 || z.coordX == n - 1 || z.coordY == n - 1)) z.probaMonstre += 0.25;
+            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordX == 0)) z.probaCrevasse += 0.25;
+            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordY == 0)) z.probaCrevasse += 0.25;
+            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordX == n - 1)) z.probaCrevasse += 0.25;
+            if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 1 && (z.coordY == n - 1)) z.probaCrevasse += 0.25;
+
             VerifierExistance(z);
         }
         List<Zone> frontiereTriée = new List<Zone>();
 
-        // choisir + safe
+        //choisir + safe
         //priorité au portail
         foreach (Zone z in frontière) if (z.probaPortail >= 1) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaPortail >= 0.75 && z.probaPortail < 1) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaPortail >= 0.5 && z.probaPortail < 0.75) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
-        foreach (Zone z in frontière) if (z.probaMonstre == 0 && z.probaCrevasse == 0) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaMonstre == 0 && z.probaCrevasse == 0 && z.probaPortail == 0 ) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         
         //priorité au monstre car on peut l'eliminer
@@ -104,15 +108,15 @@ public class Agent
         foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
 
-        foreach (Zone z in frontière) if (z.probaPortail >= 0.25 && z.probaPortail < 0.5) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaPortail >= 0.5 && z.probaPortail < 0.75) frontiereTriée.Add(z);
-        foreach (Zone z in frontière) if (z.probaPortail >= 0.75 && z.probaPortail < 1) frontiereTriée.Add(z);
+        // en suite les zones ayant un risque de crevasse
+        foreach (Zone z in frontière) if (z.probaCrevasse >= 0.25 && z.probaCrevasse < 0.5) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse >= 0.5 && z.probaCrevasse < 0.75) frontiereTriée.Add(z);
+        foreach (Zone z in frontière) if (z.probaCrevasse >= 0.75 && z.probaCrevasse < 1) frontiereTriée.Add(z);
         foreach (Zone z in frontière) if (z.probaCrevasse >= 1) frontiereTriée.Add(z);
         frontière = frontière.Except(frontiereTriée).ToList();
         
         foreach (Zone z in frontière)frontiereTriée.Add(z);
 
-        //go zone
         gc.AddConsole("Case choisie " + frontiereTriée[0]);
         return frontiereTriée[0];
     }
@@ -137,68 +141,66 @@ public class Agent
         gc.Write();
         while (listeZonesPossibles.Count > 0)
         {
-            // get the square with the lowest F score
+            // Recuperer la zone ayant la pls petite estimation
             int plusPetit = listeZonesPossibles.Min(l => l.distanceSomme);
             zoneAct = listeZonesPossibles.First(l => l.distanceSomme == plusPetit);
 
-            // add the current square to the closed list
             listeZoneParcourus.Add(zoneAct);
 
-            // show current square on the map
             int etat = effecteur.AllerSur(zoneAct.coordX, zoneAct.coordY);
-            if(etat == 1)
+            if(etat == 1) // portail
             {
                 threadActif = false;
                 Thread.Sleep(1000);
                 gc.AddConsole("J'ai trouvé le Portail!");
                 effecteur.PasserPortail();
             }
-            else if (etat == -1)
+            else if (etat == -1) // mort
             {
+                Thread.Sleep(1000);
                 threadActif = false;
                 effecteur.Mourir();
             }
             Thread.Sleep(300);
 
-            // remove it from the open list
             listeZonesPossibles.Remove(zoneAct);
 
-            // if we added the destination to the closed list, we've found a path
+            // si on atteint la destination, fin de A*
             if (listeZoneParcourus.FirstOrDefault(l => l.coordX == target.coordX && l.coordY == target.coordY) != null)
                 break;
 
-            var adjacentSquares = GetZonesProches(zoneAct.coordX, zoneAct.coordY,target.coordX,target.coordY);
+            var zonesAdjacentes = GetZonesProches(zoneAct.coordX, zoneAct.coordY,target.coordX,target.coordY);
             distanceDepart++;
 
-            foreach (var adjacentSquare in adjacentSquares)
+            foreach (var zoneAdj in zonesAdjacentes)
             {
                 // if this adjacent square is already in the closed list, ignore it
-                if (listeZoneParcourus.FirstOrDefault(l => l.coordX == adjacentSquare.coordX
-                        && l.coordY == adjacentSquare.coordY) != null)
+                if (listeZoneParcourus.FirstOrDefault(l => l.coordX == zoneAdj.coordX
+                        && l.coordY == zoneAdj.coordY) != null)
                     continue;
 
                 // if it's not in the open list...
-                if (listeZonesPossibles.FirstOrDefault(l => l.coordX == adjacentSquare.coordX
-                        && l.coordY == adjacentSquare.coordY) == null)
+                if (listeZonesPossibles.FirstOrDefault(l => l.coordX == zoneAdj.coordX
+                        && l.coordY == zoneAdj.coordY) == null)
                 {
                     // compute its score, set the parent
-                    adjacentSquare.distanceDepart = distanceDepart;
-                    adjacentSquare.distanceEstimeArrive = ComputeHScore(adjacentSquare.coordX, adjacentSquare.coordY, target.coordX, target.coordY);
-                    adjacentSquare.distanceSomme = adjacentSquare.distanceDepart + adjacentSquare.distanceEstimeArrive;
-                    adjacentSquare.parent = zoneAct;
+                    zoneAdj.distanceDepart = distanceDepart;
+                    zoneAdj.distanceEstimeArrive = ComputeHScore(zoneAdj.coordX, zoneAdj.coordY, target.coordX, target.coordY);
+                    zoneAdj.distanceSomme = zoneAdj.distanceDepart + zoneAdj.distanceEstimeArrive;
+                    zoneAdj.parent = zoneAct;
 
                     // and add it to the open list
-                    listeZonesPossibles.Insert(0, adjacentSquare);
+                    listeZonesPossibles.Insert(0, zoneAdj);
                 }
                 else
                 {
                     // test if using the current G score makes the adjacent square's F score
                     // lower, if yes update the parent because it means it's a better path
-                    if (distanceDepart + adjacentSquare.distanceEstimeArrive < adjacentSquare.distanceSomme)
+                    if (distanceDepart + zoneAdj.distanceEstimeArrive < zoneAdj.distanceSomme)
                     {
-                        adjacentSquare.distanceDepart = distanceDepart;
-                        adjacentSquare.distanceSomme = adjacentSquare.distanceDepart + adjacentSquare.distanceEstimeArrive;
-                        adjacentSquare.parent = zoneAct;
+                        zoneAdj.distanceDepart = distanceDepart;
+                        zoneAdj.distanceSomme = zoneAdj.distanceDepart + zoneAdj.distanceEstimeArrive;
+                        zoneAdj.parent = zoneAct;
                     }
                 }
             }
@@ -213,20 +215,21 @@ public class Agent
         threadActif = true;
         Thread.Sleep(1000);
         // Tant que le thread n'est pas tué, on travaille
+        Zone z = null;
         while (threadActif)
         {
-            if(peutAvancer || modeAuto)
+            if(z == null) z = Reflechir();
+            if (peutAvancer || modeAuto)
             {
-                Zone z = Reflechir();
                 Agir(z);
                 peutAvancer = false;
+                z = null;
             }
             Console.Clear();
-           // effecteur.DessinerForet();
 
             //gc.AddConsole(posAspiX + ":" + posAspiY);
             gc.Write();
-            Thread.Sleep(300);    
+            Thread.Sleep(600);    
         }
     }
 

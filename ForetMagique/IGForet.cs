@@ -56,7 +56,7 @@ namespace ForetMagique
             {
                 chckBoxAuto.Checked = false;
             }));
-           
+
         }
 
         public void SetPanel(int rows, int columns)
@@ -98,77 +98,83 @@ namespace ForetMagique
 
         public void SetZone(Zone zone)
         {
-            int x = zone.coordX;
-            int y = zone.coordY;
-
-            Image img = null;
-            if (zone.estFrontiere) pbs[y, x].BackColor = Color.Red;
-            else if (zone.visité) pbs[y, x].BackColor = Color.White;
-            else if(checkBox1.Checked) pbs[y, x].BackColor = Color.DarkGray;
-            else pbs[y, x].BackColor = Color.Black;
-
-            if (zone.contenu.Count == 0)
+            try
             {
-                pbs[y, x].Image = null;
-                return;
-            }
 
-            if (checkBox1.Checked)
-            {
-                switch (zone.contenu[0])
+
+                int x = zone.coordX;
+                int y = zone.coordY;
+
+                Image img = null;
+                if (zone.estFrontiere) pbs[y, x].BackColor = Color.Red;
+                else if (zone.visité) pbs[y, x].BackColor = Color.White;
+                else if (checkBox1.Checked) pbs[y, x].BackColor = Color.DarkGray;
+                else pbs[y, x].BackColor = Color.Black;
+
+                if (zone.contenu.Count == 0)
                 {
-                    case "monstre_mort":
-                        img = Properties.Resources.monstre_mort;
-                        break;
-                    case "monstre":
-                        img = Properties.Resources.monstre;
-                        break;
-                    case "odeur":
-                        img = Properties.Resources.odeur;
-                        break;
-                    case "crevasse":
-                        img = Properties.Resources.crevasse;
-                        break;
-                    case "vent":
-                        img = Properties.Resources.vent;
-                        break;
-                    case "portail":
-                        img = Properties.Resources.portail;
-                        break;
-                    default:
-                        img = null;
-                        break;
+                    pbs[y, x].Image = null;
+                    return;
                 }
-            }
-            else if (zone.visité)
-            {
-                switch (zone.contenu[0])
+
+                if (checkBox1.Checked)
                 {
-                    case "monstre_mort":
-                        img = Properties.Resources.monstre_mort;
-                        break;
-                    case "monstre":
-                        img = Properties.Resources.monstre;
-                        break;
-                    case "odeur":
-                        img = Properties.Resources.odeur;
-                        break;
-                    case "crevasse":
-                        img = Properties.Resources.crevasse;
-                        break;
-                    case "vent":
-                        img = Properties.Resources.vent;
-                        break;
-                    case "portail":
-                        img = Properties.Resources.portail;
-                        break;
-                    default:
-                        img = null;
-                        break;
+                    switch (zone.contenu[0])
+                    {
+                        case "monstre_mort":
+                            img = Properties.Resources.monstre_mort;
+                            break;
+                        case "monstre":
+                            img = Properties.Resources.monstre;
+                            break;
+                        case "odeur":
+                            img = Properties.Resources.odeur;
+                            break;
+                        case "crevasse":
+                            img = Properties.Resources.crevasse;
+                            break;
+                        case "vent":
+                            img = Properties.Resources.vent;
+                            break;
+                        case "portail":
+                            img = Properties.Resources.portail;
+                            break;
+                        default:
+                            img = null;
+                            break;
+                    }
                 }
+                else if (zone.visité)
+                {
+                    switch (zone.contenu[0])
+                    {
+                        case "monstre_mort":
+                            img = Properties.Resources.monstre_mort;
+                            break;
+                        case "monstre":
+                            img = Properties.Resources.monstre;
+                            break;
+                        case "odeur":
+                            img = Properties.Resources.odeur;
+                            break;
+                        case "crevasse":
+                            img = Properties.Resources.crevasse;
+                            break;
+                        case "vent":
+                            img = Properties.Resources.vent;
+                            break;
+                        case "portail":
+                            img = Properties.Resources.portail;
+                            break;
+                        default:
+                            img = null;
+                            break;
+                    }
+                }
+                if (zone.contenu[0] == "agent") img = Properties.Resources.agent;
+                pbs[y, x].Image = img;
             }
-            if (zone.contenu[0] == "agent") img = Properties.Resources.agent;
-            pbs[y, x].Image = img;
+            catch(Exception e) { }
         }
 
         public void UpdatePerf(int perf)
@@ -181,10 +187,10 @@ namespace ForetMagique
                     label1.Text = "performance : " + performance;
                 }));
             }
-            catch(Exception e) { }  
+            catch (Exception e) { }
         }
 
-        private void label1_Click(object sender, EventArgs e){}
+        private void label1_Click(object sender, EventArgs e) { }
 
         private void btnDemarrer_Click(object sender, EventArgs e)
         {

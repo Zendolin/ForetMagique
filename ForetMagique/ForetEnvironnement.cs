@@ -44,7 +44,11 @@ public class ForetEnvironnement
         zonesForet[0, 0].contenu.Add("agent");
         zonesForet[0, 0].visité = true;
         Random rnd = new Random();
-        zonesForet[rnd.Next(1,NbZonesLigne), rnd.Next(1, NbZonesLigne)].contenu.Add("portail");
+        int xPortail = rnd.Next(1, NbZonesLigne);
+        int yPortail = rnd.Next(1, NbZonesLigne);
+        zonesForet[yPortail, xPortail].contenu.Add("portail");
+        List<Zone> listesZonesMonstres = new List<Zone>();
+        List<Zone> listesZonesCrevasses = new List<Zone>();
 
         //ajout aléatoire de monstres
         for (int x = 0; x < NbZonesLigne; x++)
@@ -54,7 +58,11 @@ public class ForetEnvironnement
                 if (zonesForet[y, x].contenu.Count == 0)
                 {
                     int chance = rnd.Next(0, 100);
-                    if (chance < 10) zonesForet[y, x].contenu.Add("monstre");
+                    if (chance < 10)
+                    {
+                        zonesForet[y, x].contenu.Add("monstre");
+                        listesZonesMonstres.Add(zonesForet[y, x]);
+                    }
                 }
             }
         }
@@ -66,23 +74,17 @@ public class ForetEnvironnement
                 if (zonesForet[y, x].contenu.Count == 0)
                 {
                     int chance = rnd.Next(0, 100);
-                    if (chance < 10) zonesForet[y, x].contenu.Add("crevasse");
+                    if (chance < 10)
+                    {
+                        zonesForet[y, x].contenu.Add("crevasse");
+                        listesZonesCrevasses.Add(zonesForet[y, x]);
+                    }
                 }
             }
         }
 
         Console.WriteLine("Monstres et crevasses placés");
-        //ajout des informations
-        for (int x = 0; x < NbZonesLigne; x++)
-        {
-            for (int y = 0; y < NbZonesLigne; y++)
-            {
-                if (MonstreEstProche(x, y)) zonesForet[y, x].contenu.Add("odeur");
-                if (CrevasseEstProche(x, y)) zonesForet[y, x].contenu.Add("vent");
-                if (PortailEstProche(x, y)) zonesForet[y, x].contenu.Add("lumiere");
-            }
-        }
-
+        
         // ajout des cases voisines
         for (int x = 0; x < NbZonesLigne; x++)
         {
@@ -94,33 +96,27 @@ public class ForetEnvironnement
                 if (y < NbZonesLigne - 1) zonesForet[y, x].voisinBas = zonesForet[y+1, x];
             }
         }
-    }
+        //ajout des informations
+        foreach (Zone z in listesZonesCrevasses)
+        {
+            if (z.voisinBas != null) z.voisinBas.contenu.Add("vent");
+            if (z.voisinHaut != null) z.voisinHaut.contenu.Add("vent");
+            if (z.voisinGauche != null) z.voisinGauche.contenu.Add("vent");
+            if (z.voisinDroite != null) z.voisinDroite.contenu.Add("vent");
+        }
+        foreach (Zone z in listesZonesMonstres)
+        {
+            if (z.voisinBas != null) z.voisinBas.contenu.Add("odeur");
+            if (z.voisinHaut != null) z.voisinHaut.contenu.Add("odeur");
+            if (z.voisinGauche != null) z.voisinGauche.contenu.Add("odeur");
+            if (z.voisinDroite != null) z.voisinDroite.contenu.Add("odeur");   
+        }
+        if (zonesForet[yPortail, xPortail].voisinGauche != null) zonesForet[yPortail, xPortail].voisinGauche.contenu.Add("lumiere");
+        if (zonesForet[yPortail, xPortail].voisinDroite != null) zonesForet[yPortail, xPortail].voisinDroite.contenu.Add("lumiere");
+        if (zonesForet[yPortail, xPortail].voisinBas != null) zonesForet[yPortail, xPortail].voisinBas.contenu.Add("lumiere");
+        if (zonesForet[yPortail, xPortail].voisinHaut != null) zonesForet[yPortail, xPortail].voisinHaut.contenu.Add("lumiere");
 
-    private bool MonstreEstProche(int x ,int y)
-    {
-        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("monstre")) return true;
-        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("monstre")) return true;
-        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("monstre")) return true;
-        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("monstre")) return true;
-        else return false;
-    }
-
-    private bool CrevasseEstProche(int x, int y)
-    {
-        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("crevasse")) return true;
-        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("crevasse")) return true;
-        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("crevasse")) return true;
-        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("crevasse")) return true;
-        else return false;
-    }
-
-    private bool PortailEstProche(int x, int y)
-    {
-        if (x > 0 && zonesForet[y, x - 1].contenu.Contains("portail")) return true;
-        else if (x < NbZonesLigne - 1 && zonesForet[y, x + 1].contenu.Contains("portail")) return true;
-        else if (y > 0 && zonesForet[y - 1, x].contenu.Contains("portail")) return true;
-        else if (y < NbZonesLigne - 1 && zonesForet[y + 1, x].contenu.Contains("portail")) return true;
-        else return false;
+        gc.AddConsole("Fin generation Foret");
     }
 
     public Zone GetCurrentZone()
